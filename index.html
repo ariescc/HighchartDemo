@@ -1,0 +1,135 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="js/jquery-1.8.3.min.js"></script>
+    <script src="js/highcharts.js"></script>
+    <script src="js/highcharts-zh_CN.js"></script>
+    <script src="js/exporting.js"></script>
+
+    <script src="data.js"></script>
+</head>
+
+<body>
+    <div id="container" style="min-width:400px;height:400px"></div>
+
+    <script>
+        var i = 0;
+        var arr = [];
+        var k = 0;
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+
+        function activeLastPointToolip(chart) {
+            var points = chart.series[0].points;
+            chart.tooltip.refresh(points[points.length - 1]);
+            console.log(points.length)
+        }
+        $('#container').highcharts({
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                // marginRight: 10,
+                events: {
+                    load: function() {
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                            chart = this;
+                        window.chart=this;
+                        setInterval(function() {
+                            var cur = '2015-09-21';
+                            var oldTime = (new Date(cur)).getTime();
+                            var newDate = (new Date(oldTime + data[i].day * 24 * 60 * 60 * 1000));
+                            // console.log(newDate);
+                            // console.log(new Date(cur));
+                            // console.log(data[i].day);
+                            var x = newDate, // current time
+                                y = data[i].visits;
+                            console.log(x);
+                            series.addPoint([x, y], true, true);
+                            activeLastPointToolip(chart);
+                            ++i;
+                        }, 1000);
+                    }
+                }
+            },
+            title: {
+                text: 'Visits by day of MOOC(C programming) from 2015-08-27 10:32 to 2016-08-10 23:17'
+            },
+            xAxis: {
+                type: 'datetime',
+                title: {
+                    text: '天数'
+                },
+                allowDecimals: false,
+                labels: {
+                    align: 'left',
+                    formatter: function() {
+                                // var cur = '2015-08-27';
+                                // var oldTime = (new Date(cur)).getTime();
+                                // var newDate = (new Date(oldTime + data[1].day * 24 * 60 * 60 * 1000));
+                                // arr[0] = newDate;
+                            console.log('i:', i);
+
+                            var cur = '2015-09-21';
+                            var oldDate = new Date(cur);
+                            oldDate.setDate(oldDate.getDate()+this.value);
+
+                            console.log('value:', this.value);
+
+                            return Highcharts.dateFormat('%Y-%m-%d', oldDate);
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: '访问量'
+                },
+            },
+            tooltip: {
+                formatter: function() {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                           '第 '+this.x+' 天' + '<br/>' + '访问量: ' +
+                           this.y
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: '当天访问量',
+                data: (function() {
+                    var dt = [];
+                    while (i < 10) {
+                        var cur = '2015-09-21';
+                        var oldTime = (new Date(cur)).getTime();
+                        var newDate = new Date(oldTime + data[i].day * 24 * 60 * 60 * 1000);
+                        var x = newDate, // current time
+                            y = data[i].visits;
+                        console.log(x);
+                        var point = [x, y];
+                        dt.push(point);
+                        ++i;
+                    }
+                    return dt;
+                })()
+            }]
+        }, function(c) {
+            activeLastPointToolip(c)
+        });
+    </script>
+</body>
+
+</html>
